@@ -1,0 +1,8 @@
+pytest==9.0.2
+pytest-html==4.2.0
+pytest-timeout==2.4.0
+requests==2.32.5
+pywinauto==0.6.9
+pywin32==306
+python-dotenv==1.2.1
+jsonschema==4.26.0
