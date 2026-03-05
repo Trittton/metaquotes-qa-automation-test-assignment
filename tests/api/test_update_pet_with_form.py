@@ -12,13 +12,13 @@ logger = logging.getLogger(__name__)
 
 pytestmark = pytest.mark.api
 
-_PET_SCHEMA = {
+_API_RESPONSE_SCHEMA = {
     "type": "object",
-    "required": ["id", "name", "status"],
+    "required": ["code", "type", "message"],
     "properties": {
-        "id": {"type": "integer"},
-        "name": {"type": "string"},
-        "status": {"type": "string"},
+        "code": {"type": "integer"},
+        "type": {"type": "string"},
+        "message": {"type": "string"},
     },
 }
 
@@ -181,8 +181,8 @@ def test_successful_update_response_schema(api_client: PetstoreApiClient, create
     assert response.status_code == 200, f"Expected 200, got {response.status_code}. Body: {response.text[:300]}"
 
     body = response.json()
-    jsonschema.validate(instance=body, schema=_PET_SCHEMA)
-    assert body["id"] == pet_id
+    jsonschema.validate(instance=body, schema=_API_RESPONSE_SCHEMA)
+    assert body["code"] == 200
 
 
 def test_update_is_applied_to_correct_pet(api_client: PetstoreApiClient, created_pet: dict):
