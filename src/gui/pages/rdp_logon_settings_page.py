@@ -43,3 +43,52 @@ class RdpLogonSettingsPage:
 
     def window_exists(self) -> bool:
         return self._window is not None and self._window.exists()
+
+    def expand_options(self) -> "RdpLogonSettingsPage":
+        """Click 'Show Options' to reveal the tabbed dialog."""
+        try:
+            show_btn = self._window.child_window(title="Show Options", control_type="Button")
+            show_btn.wait("exists", timeout=5)
+            show_btn.click_input()
+            tab_control = self._window.child_window(auto_id="5015", control_type="Tab")
+            tab_control.wait("exists", timeout=10)
+            logger.info("Dialog expanded")
+        except Exception as e:
+            logger.debug("expand_options: %s", e)
+        return self
+
+    def select_general_tab(self) -> "RdpLogonSettingsPage":
+        tab_control = self._window.child_window(auto_id="5015", control_type="Tab")
+        tab_control.wait("exists", timeout=8)
+        general = tab_control.child_window(title="General", control_type="TabItem")
+        general.wait("visible", timeout=8)
+        general.select()
+        return self
+
+    def select_display_tab(self) -> "RdpLogonSettingsPage":
+        tab_control = self._window.child_window(auto_id="5015", control_type="Tab")
+        tab_control.wait("exists", timeout=8)
+        tab_control.child_window(title="Display", control_type="TabItem").select()
+        return self
+
+    def is_general_tab_visible(self) -> bool:
+        try:
+            return self._window.child_window(auto_id="5015", control_type="Tab").exists(timeout=2)
+        except Exception:
+            return False
+
+    def is_show_options_button_visible(self) -> bool:
+        try:
+            return self._window.child_window(
+                title="Show Options", control_type="Button"
+            ).exists(timeout=1)
+        except Exception:
+            return False
+
+    def is_hide_options_button_visible(self) -> bool:
+        try:
+            return self._window.child_window(
+                title="Hide Options ", control_type="Button"
+            ).exists(timeout=1)
+        except Exception:
+            return False
