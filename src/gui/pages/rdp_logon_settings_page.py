@@ -3,7 +3,7 @@
 
 import logging
 
-from pywinauto import Desktop
+from pywinauto.application import Application
 
 logger = logging.getLogger(__name__)
 
@@ -19,9 +19,14 @@ class RdpLogonSettingsPage:
         self._window = None
 
     def launch(self) -> "RdpLogonSettingsPage":
-        """Start mstsc.exe and wait for the dialog."""
+        """Start mstsc.exe and wait for the dialog.
+
+        Uses Application.start() so the window is bound to this process,
+        avoiding ElementAmbiguousError when a prior instance is still closing.
+        """
         logger.info("Launching %s", MSTSC_EXE)
-        self._window = Desktop(backend="uia").window(title=MSTSC_TITLE, control_type="Window")
+        self._app = Application(backend="uia").start(MSTSC_EXE)
+        self._window = self._app.window(title=MSTSC_TITLE, control_type="Window")
         self._window.wait("visible", timeout=WINDOW_WAIT_TIMEOUT)
         return self
 
