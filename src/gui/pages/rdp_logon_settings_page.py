@@ -59,7 +59,7 @@ class RdpLogonSettingsPage:
         show_btn.wait("exists", timeout=5)
         self._window.set_focus()
         # invoke() is more reliable than click_input() for this toolbar button
-        show_btn.click_input()
+        show_btn.invoke()
 
         tab_control.wait("exists", timeout=10)
         logger.info("Dialog expanded")
