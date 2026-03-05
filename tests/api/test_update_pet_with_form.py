@@ -3,6 +3,7 @@
 import json
 import logging
 
+import jsonschema
 import pytest
 
 from src.api.client import PetstoreApiClient
@@ -10,6 +11,16 @@ from src.api.client import PetstoreApiClient
 logger = logging.getLogger(__name__)
 
 pytestmark = pytest.mark.api
+
+_PET_SCHEMA = {
+    "type": "object",
+    "required": ["id", "name", "status"],
+    "properties": {
+        "id": {"type": "integer"},
+        "name": {"type": "string"},
+        "status": {"type": "string"},
+    },
+}
 
 
 @pytest.mark.smoke
@@ -161,3 +172,26 @@ def test_wrong_content_type_sends_json_body(api_client: PetstoreApiClient, creat
     )
 
     assert response.status_code != 500, "Server must not crash on JSON body"
+
+@pytest.mark.smoke
+def test_successful_update_response_schema(api_client: PetstoreApiClient, created_pet: dict):
+    pet_id = created_pet["id"]
+    response = api_client.update_pet_with_form(pet_id, name="SchemaTest", status="available")
+
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}. Body: {response.text[:300]}"
+
+    body = response.json()
+    jsonschema.validate(instance=body, schema=_PET_SCHEMA)
+    assert body["id"] == pet_id
+
+
+def test_update_is_applied_to_correct_pet(api_client: PetstoreApiClient, created_pet: dict):
+    pet_id = created_pet["id"]
+    new_name = "ConsistencyCheck"
+
+    response = api_client.update_pet_with_form(pet_id, name=new_name)
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}"
+
+    body = response.json()
+    assert body.get("id") == pet_id, f"Expected pet id {pet_id} in response, got {body.get('id')}"
+    assert body.get("name") == new_name, f"Expected {new_name!r}, got {body.get('name')!r}"
