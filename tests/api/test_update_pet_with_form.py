@@ -192,6 +192,6 @@ def test_update_is_applied_to_correct_pet(api_client: PetstoreApiClient, created
     response = api_client.update_pet_with_form(pet_id, name=new_name)
     assert response.status_code == 200, f"Expected 200, got {response.status_code}"
 
-    body = response.json()
-    assert body.get("id") == pet_id, f"Expected pet id {pet_id} in response, got {body.get('id')}"
-    assert body.get("name") == new_name, f"Expected {new_name!r}, got {body.get('name')!r}"
+    pet = api_client.get_pet_by_id(pet_id).json()
+    assert pet.get("id") == pet_id
+    assert pet.get("name") == new_name, f"Expected {new_name!r}, got {pet.get('name')!r}"
