@@ -47,7 +47,7 @@ class RdpLogonSettingsPage:
     def expand_options(self) -> "RdpLogonSettingsPage":
         """Click 'Show Options' to reveal the tabbed dialog."""
         try:
-            show_btn = self._window.child_window(title="Show Options", control_type="Button")
+            show_btn = self._window.child_window(title="Show Options ", control_type="Button")
             show_btn.wait("exists", timeout=5)
             show_btn.click_input()
             tab_control = self._window.child_window(auto_id="5015", control_type="Tab")
@@ -80,7 +80,7 @@ class RdpLogonSettingsPage:
     def is_show_options_button_visible(self) -> bool:
         try:
             return self._window.child_window(
-                title="Show Options", control_type="Button"
+                title="Show Options ", control_type="Button"
             ).exists(timeout=1)
         except Exception:
             return False
