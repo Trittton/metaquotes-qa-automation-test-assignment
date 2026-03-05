@@ -1,5 +1,6 @@
 """POST /pet/{petId} form-data update tests — Petstore Swagger v2."""
 
+import json
 import logging
 
 import pytest
@@ -146,3 +147,17 @@ def test_update_nonexistent_pet_id(api_client: PetstoreApiClient):
     assert response.status_code in (404, 405), (
         f"Expected 404 or 405 for non-existent petId, got {response.status_code}"
     )
+
+def test_wrong_content_type_sends_json_body(api_client: PetstoreApiClient, created_pet: dict):
+    pet_id = created_pet["id"]
+    url = f"{api_client.base_url}/pet/{pet_id}"
+    body = json.dumps({"name": "JsonBodyTest"})
+
+    response = api_client.session.post(
+        url,
+        data=body,
+        headers={"Content-Type": "application/json", "Accept": "application/json"},
+        timeout=api_client.timeout,
+    )
+
+    assert response.status_code != 500, "Server must not crash on JSON body"
