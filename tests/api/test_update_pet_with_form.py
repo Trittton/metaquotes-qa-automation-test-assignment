@@ -72,3 +72,44 @@ def test_update_status_all_valid_enum_values(
 
     assert response.status_code == 200, f"status='{status_value}' → {response.status_code}"
     assert api_client.get_pet_by_id(pet_id).json()["status"] == status_value
+
+
+def test_update_name_with_very_long_string(api_client: PetstoreApiClient, created_pet: dict):
+    pet_id = created_pet["id"]
+    long_name = "A" * 10_000
+
+    response = api_client.update_pet_with_form(pet_id, name=long_name)
+
+    assert response.status_code != 500, "Server must not crash on a long name"
+    assert response.status_code in (200, 400, 413), f"Unexpected {response.status_code}"
+
+    if response.status_code == 200:
+        stored = api_client.get_pet_by_id(pet_id).json().get("name", "")
+        assert stored == long_name, (
+            f"Silent truncation: sent {len(long_name)} chars, stored {len(stored)}"
+        )
+
+
+@pytest.mark.parametrize(
+    "special_name",
+    [
+        "Ünïcödé Pét",
+        "<script>alert(1)</script>",
+        "'; DROP TABLE pets; --",
+        "🐕 Dog 🐾",
+        "name\x00with\x00nulls",
+    ],
+)
+def test_update_name_with_special_characters(
+    api_client: PetstoreApiClient, created_pet: dict, special_name: str
+):
+    pet_id = created_pet["id"]
+    response = api_client.update_pet_with_form(pet_id, name=special_name)
+
+    assert response.status_code != 500, f"Server returned 500 for name={special_name!r}"
+
+    if response.status_code == 200:
+        get_resp = api_client.get_pet_by_id(pet_id)
+        if get_resp.status_code == 200:
+            stored = get_resp.json().get("name")
+            assert stored is not None, f"Stored null for name={special_name!r}"
