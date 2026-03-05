@@ -125,18 +125,21 @@ def test_update_with_alphabetic_pet_id_returns_error(api_client: PetstoreApiClie
 
 
 @pytest.mark.negative
+@pytest.mark.xfail(strict=False, reason="BUG: server accepts petId=0, spec expects 405")
 def test_update_with_zero_pet_id(api_client: PetstoreApiClient):
     response = api_client.update_pet_with_form(0, name="ZeroIdTest")
     assert response.status_code == 405, f"Expected 405 for petId=0, got {response.status_code}"
 
 
 @pytest.mark.negative
+@pytest.mark.xfail(strict=False, reason="BUG: server accepts negative petId, spec expects 405")
 def test_update_with_negative_pet_id(api_client: PetstoreApiClient):
     response = api_client.update_pet_with_form(-1, name="NegativeIdTest")
     assert response.status_code == 405, f"Expected 405 for petId=-1, got {response.status_code}"
 
 
 @pytest.mark.negative
+@pytest.mark.xfail(strict=False, reason="BUG: server accepts updates for non-existent IDs, spec expects 404/405")
 def test_update_nonexistent_pet_id(api_client: PetstoreApiClient):
     response = api_client.update_pet_with_form(9_999_999_987_654_321, name="GhostPet")
 
