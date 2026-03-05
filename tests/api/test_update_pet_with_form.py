@@ -113,3 +113,33 @@ def test_update_name_with_special_characters(
         if get_resp.status_code == 200:
             stored = get_resp.json().get("name")
             assert stored is not None, f"Stored null for name={special_name!r}"
+
+
+@pytest.mark.negative
+def test_update_with_alphabetic_pet_id_returns_error(api_client: PetstoreApiClient):
+    response = api_client.update_pet_with_form("abc", name="ShouldFail")
+
+    assert response.status_code >= 400, (
+        f"Expected 4xx for alphabetic petId, got {response.status_code}. Body: {response.text[:300]}"
+    )
+
+
+@pytest.mark.negative
+def test_update_with_zero_pet_id(api_client: PetstoreApiClient):
+    response = api_client.update_pet_with_form(0, name="ZeroIdTest")
+    assert response.status_code == 405, f"Expected 405 for petId=0, got {response.status_code}"
+
+
+@pytest.mark.negative
+def test_update_with_negative_pet_id(api_client: PetstoreApiClient):
+    response = api_client.update_pet_with_form(-1, name="NegativeIdTest")
+    assert response.status_code == 405, f"Expected 405 for petId=-1, got {response.status_code}"
+
+
+@pytest.mark.negative
+def test_update_nonexistent_pet_id(api_client: PetstoreApiClient):
+    response = api_client.update_pet_with_form(9_999_999_987_654_321, name="GhostPet")
+
+    assert response.status_code in (404, 405), (
+        f"Expected 404 or 405 for non-existent petId, got {response.status_code}"
+    )
