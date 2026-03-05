@@ -50,16 +50,19 @@ class RdpLogonSettingsPage:
         return self._window is not None and self._window.exists()
 
     def expand_options(self) -> "RdpLogonSettingsPage":
-        """Click 'Show Options' to reveal the tabbed dialog."""
-        try:
-            show_btn = self._window.child_window(title="Show Options ", control_type="Button")
-            show_btn.wait("exists", timeout=5)
-            show_btn.click_input()
-            tab_control = self._window.child_window(auto_id="5015", control_type="Tab")
-            tab_control.wait("exists", timeout=10)
-            logger.info("Dialog expanded")
-        except Exception as e:
-            logger.debug("expand_options: %s", e)
+        """Click 'Show Options' to reveal the tabbed dialog. No-op if already expanded."""
+        tab_control = self._window.child_window(auto_id="5015", control_type="Tab")
+        if tab_control.exists(timeout=1):
+            return self
+
+        show_btn = self._window.child_window(title="Show Options ", control_type="Button")
+        show_btn.wait("exists", timeout=5)
+        self._window.set_focus()
+        # invoke() is more reliable than click_input() for this toolbar button
+        show_btn.click_input()
+
+        tab_control.wait("exists", timeout=10)
+        logger.info("Dialog expanded")
         return self
 
     def select_general_tab(self) -> "RdpLogonSettingsPage":
