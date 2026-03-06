@@ -46,9 +46,6 @@ class RdpLogonSettingsPage:
             except Exception as e:
                 logger.debug("Window close: %s", e)
 
-    def window_exists(self) -> bool:
-        return self._window is not None and self._window.exists()
-
     def expand_options(self) -> "RdpLogonSettingsPage":
         """Click 'Show Options' to reveal the tabbed dialog. No-op if already expanded."""
         tab_control = self._window.child_window(auto_id="5015", control_type="Tab")
@@ -76,28 +73,6 @@ class RdpLogonSettingsPage:
         tab_control.wait("exists", timeout=8)
         tab_control.child_window(title="Display", control_type="TabItem").select()
         return self
-
-    def is_general_tab_visible(self) -> bool:
-        try:
-            return self._window.child_window(auto_id="5015", control_type="Tab").exists(timeout=2)
-        except Exception:
-            return False
-
-    def is_show_options_button_visible(self) -> bool:
-        try:
-            return self._window.child_window(
-                title="Show Options ", control_type="Button"
-            ).exists(timeout=1)
-        except Exception:
-            return False
-
-    def is_hide_options_button_visible(self) -> bool:
-        try:
-            return self._window.child_window(
-                title="Hide Options ", control_type="Button"
-            ).exists(timeout=1)
-        except Exception:
-            return False
 
     def set_computer(self, hostname: str) -> None:
         self._get_computer_field().set_edit_text(hostname)
@@ -156,6 +131,31 @@ class RdpLogonSettingsPage:
 
     def click_open(self) -> None:
         self._window.child_window(title="Open...", control_type="Button").click_input()
+
+    def window_exists(self) -> bool:
+        return self._window is not None and self._window.exists()
+
+    def is_general_tab_visible(self) -> bool:
+        try:
+            return self._window.child_window(auto_id="5015", control_type="Tab").exists(timeout=2)
+        except Exception:
+            return False
+
+    def is_show_options_button_visible(self) -> bool:
+        try:
+            return self._window.child_window(
+                title="Show Options ", control_type="Button"
+            ).exists(timeout=1)
+        except Exception:
+            return False
+
+    def is_hide_options_button_visible(self) -> bool:
+        try:
+            return self._window.child_window(
+                title="Hide Options ", control_type="Button"
+            ).exists(timeout=1)
+        except Exception:
+            return False
 
     def is_computer_field_visible(self) -> bool:
         try:

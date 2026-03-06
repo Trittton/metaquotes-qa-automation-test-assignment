@@ -1,6 +1,7 @@
 """POST /pet/{petId} form-data update tests — Petstore Swagger v2."""
 
 import json
+
 import jsonschema
 import pytest
 
@@ -82,6 +83,39 @@ def test_update_status_all_valid_enum_values(
     assert api_client.get_pet_by_id(pet_id).json()["status"] == status_value
 
 
+@pytest.mark.negative
+def test_update_with_alphabetic_pet_id_returns_error(api_client: PetstoreApiClient):
+    response = api_client.update_pet_with_form("abc", name="ShouldFail")
+
+    assert response.status_code >= 400, (
+        f"Expected 4xx for alphabetic petId, got {response.status_code}. Body: {response.text[:300]}"
+    )
+
+
+@pytest.mark.negative
+@pytest.mark.xfail(strict=False, reason="BUG: server accepts petId=0, spec expects 405")
+def test_update_with_zero_pet_id(api_client: PetstoreApiClient):
+    response = api_client.update_pet_with_form(0, name="ZeroIdTest")
+    assert response.status_code == 405, f"Expected 405 for petId=0, got {response.status_code}"
+
+
+@pytest.mark.negative
+@pytest.mark.xfail(strict=False, reason="BUG: server accepts negative petId, spec expects 405")
+def test_update_with_negative_pet_id(api_client: PetstoreApiClient):
+    response = api_client.update_pet_with_form(-1, name="NegativeIdTest")
+    assert response.status_code == 405, f"Expected 405 for petId=-1, got {response.status_code}"
+
+
+@pytest.mark.negative
+@pytest.mark.xfail(strict=False, reason="BUG: server accepts updates for non-existent IDs, spec expects 404/405")
+def test_update_nonexistent_pet_id(api_client: PetstoreApiClient):
+    response = api_client.update_pet_with_form(9_999_999_987_654_321, name="GhostPet")
+
+    assert response.status_code in (404, 405), (
+        f"Expected 404 or 405 for non-existent petId, got {response.status_code}"
+    )
+
+
 def test_update_name_with_very_long_string(api_client: PetstoreApiClient, created_pet: dict):
     pet_id = created_pet["id"]
     long_name = "A" * 10_000
@@ -124,36 +158,23 @@ def test_update_name_with_special_characters(
 
 
 @pytest.mark.negative
-def test_update_with_alphabetic_pet_id_returns_error(api_client: PetstoreApiClient):
-    response = api_client.update_pet_with_form("abc", name="ShouldFail")
+@pytest.mark.xfail(
+    strict=False,
+    reason="BUG: server accepts invalid status 'flying' instead of returning 405",
+)
+def test_update_with_invalid_status_value(api_client: PetstoreApiClient, created_pet: dict):
+    pet_id = created_pet["id"]
 
-    assert response.status_code >= 400, (
-        f"Expected 4xx for alphabetic petId, got {response.status_code}. Body: {response.text[:300]}"
-    )
+    response = api_client.update_pet_with_form(pet_id, status="flying")
 
+    if response.status_code == 200:
+        stored_status = api_client.get_pet_by_id(pet_id).json().get("status")
+        assert stored_status in ("available", "pending", "sold"), (
+            f"Server stored invalid status '{stored_status}'"
+        )
+    else:
+        assert response.status_code in (400, 405)
 
-@pytest.mark.negative
-@pytest.mark.xfail(strict=False, reason="BUG: server accepts petId=0, spec expects 405")
-def test_update_with_zero_pet_id(api_client: PetstoreApiClient):
-    response = api_client.update_pet_with_form(0, name="ZeroIdTest")
-    assert response.status_code == 405, f"Expected 405 for petId=0, got {response.status_code}"
-
-
-@pytest.mark.negative
-@pytest.mark.xfail(strict=False, reason="BUG: server accepts negative petId, spec expects 405")
-def test_update_with_negative_pet_id(api_client: PetstoreApiClient):
-    response = api_client.update_pet_with_form(-1, name="NegativeIdTest")
-    assert response.status_code == 405, f"Expected 405 for petId=-1, got {response.status_code}"
-
-
-@pytest.mark.negative
-@pytest.mark.xfail(strict=False, reason="BUG: server accepts updates for non-existent IDs, spec expects 404/405")
-def test_update_nonexistent_pet_id(api_client: PetstoreApiClient):
-    response = api_client.update_pet_with_form(9_999_999_987_654_321, name="GhostPet")
-
-    assert response.status_code in (404, 405), (
-        f"Expected 404 or 405 for non-existent petId, got {response.status_code}"
-    )
 
 def test_wrong_content_type_sends_json_body(api_client: PetstoreApiClient, created_pet: dict):
     pet_id = created_pet["id"]
@@ -168,6 +189,7 @@ def test_wrong_content_type_sends_json_body(api_client: PetstoreApiClient, creat
     )
 
     assert response.status_code != 500, "Server must not crash on JSON body"
+
 
 @pytest.mark.smoke
 def test_successful_update_response_schema(api_client: PetstoreApiClient, created_pet: dict):
@@ -191,21 +213,3 @@ def test_update_is_applied_to_correct_pet(api_client: PetstoreApiClient, created
     pet = api_client.get_pet_by_id(pet_id).json()
     assert pet.get("id") == pet_id
     assert pet.get("name") == new_name, f"Expected {new_name!r}, got {pet.get('name')!r}"
-
-@pytest.mark.negative
-@pytest.mark.xfail(
-    strict=False,
-    reason="BUG: server accepts invalid status 'flying' instead of returning 405",
-)
-def test_update_with_invalid_status_value(api_client: PetstoreApiClient, created_pet: dict):
-    pet_id = created_pet["id"]
-
-    response = api_client.update_pet_with_form(pet_id, status="flying")
-
-    if response.status_code == 200:
-        stored_status = api_client.get_pet_by_id(pet_id).json().get("status")
-        assert stored_status in ("available", "pending", "sold"), (
-            f"Server stored invalid status '{stored_status}'"
-        )
-    else:
-        assert response.status_code in (400, 405)

@@ -33,19 +33,6 @@ def test_general_tab_is_selectable(mstsc_raw: RdpLogonSettingsPage):
 
 
 @pytest.mark.smoke
-def test_username_field_visible_and_enabled_on_general_tab(mstsc_page: RdpLogonSettingsPage):
-    assert mstsc_page.is_username_field_visible(), "User name field must be visible."
-    assert mstsc_page.is_username_field_enabled(), "User name field must be enabled."
-
-
-@pytest.mark.smoke
-def test_mstsc_window_can_be_closed(mstsc_raw: RdpLogonSettingsPage):
-    assert mstsc_raw.window_exists()
-    mstsc_raw.close()
-    assert not mstsc_raw.window_exists(), "Window must not exist after close()."
-
-
-@pytest.mark.smoke
 def test_computer_field_accepts_valid_hostname(mstsc_page: RdpLogonSettingsPage):
     hostname = "myserver.local"
     mstsc_page.clear_computer()
@@ -82,8 +69,14 @@ def test_computer_field_can_be_cleared(mstsc_page: RdpLogonSettingsPage):
     assert result == "", f"Expected empty Computer field, got {result!r}"
 
 
+@pytest.mark.smoke
+def test_username_field_visible_and_enabled_on_general_tab(mstsc_page: RdpLogonSettingsPage):
+    assert mstsc_page.is_username_field_visible(), "User name field must be visible."
+    assert mstsc_page.is_username_field_enabled(), "User name field must be enabled."
+
+
 def test_username_field_accepts_domain_username(mstsc_page: RdpLogonSettingsPage):
-    username = "CORP\testuser"
+    username = "CORP\\testuser"
     mstsc_page.set_username(username)
 
     assert mstsc_page.get_username() == username, (
@@ -149,3 +142,10 @@ def test_settings_persist_after_tab_switch(mstsc_page: RdpLogonSettingsPage):
     assert mstsc_page.get_username() == username, (
         f"Username field lost value after tab switch. Got {mstsc_page.get_username()!r}"
     )
+
+
+@pytest.mark.smoke
+def test_mstsc_window_can_be_closed(mstsc_raw: RdpLogonSettingsPage):
+    assert mstsc_raw.window_exists()
+    mstsc_raw.close()
+    assert not mstsc_raw.window_exists(), "Window must not exist after close()."
