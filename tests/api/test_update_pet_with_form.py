@@ -195,3 +195,21 @@ def test_update_is_applied_to_correct_pet(api_client: PetstoreApiClient, created
     pet = api_client.get_pet_by_id(pet_id).json()
     assert pet.get("id") == pet_id
     assert pet.get("name") == new_name, f"Expected {new_name!r}, got {pet.get('name')!r}"
+
+@pytest.mark.negative
+@pytest.mark.xfail(
+    strict=True,
+    reason="BUG: server accepts invalid status 'flying' instead of returning 405",
+)
+def test_update_with_invalid_status_value(api_client: PetstoreApiClient, created_pet: dict):
+    pet_id = created_pet["id"]
+
+    response = api_client.update_pet_with_form(pet_id, status="flying")
+
+    if response.status_code == 200:
+        stored_status = api_client.get_pet_by_id(pet_id).json().get("status")
+        assert stored_status in ("available", "pending", "sold"), (
+            f"Server stored invalid status '{stored_status}'"
+        )
+    else:
+        assert response.status_code in (400, 405)
