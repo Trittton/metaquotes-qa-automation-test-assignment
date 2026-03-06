@@ -68,9 +68,7 @@ class RdpLogonSettingsPage:
     def select_general_tab(self) -> "RdpLogonSettingsPage":
         tab_control = self._window.child_window(auto_id="5015", control_type="Tab")
         tab_control.wait("exists", timeout=8)
-        general = tab_control.child_window(title="General", control_type="TabItem")
-        general.wait("visible", timeout=8)
-        general.select()
+        tab_control.child_window(title="General", control_type="TabItem").select()
         return self
 
     def select_display_tab(self) -> "RdpLogonSettingsPage":
