@@ -1,10 +1,6 @@
-import logging
-
 import pytest
 
 from src.gui.pages.rdp_logon_settings_page import RdpLogonSettingsPage
-
-logger = logging.getLogger(__name__)
 
 pytestmark = pytest.mark.gui
 

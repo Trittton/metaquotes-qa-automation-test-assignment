@@ -1,14 +1,10 @@
 """POST /pet/{petId} form-data update tests — Petstore Swagger v2."""
 
 import json
-import logging
-
 import jsonschema
 import pytest
 
 from src.api.client import PetstoreApiClient
-
-logger = logging.getLogger(__name__)
 
 pytestmark = pytest.mark.api
 
