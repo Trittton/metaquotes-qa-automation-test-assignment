@@ -125,9 +125,8 @@ def test_always_ask_credentials_checkbox_can_be_unchecked(mstsc_page: RdpLogonSe
 
 
 def test_always_ask_credentials_checkbox_toggle_idempotency(mstsc_page: RdpLogonSettingsPage):
-    initial = False
+    initial = mstsc_page.is_always_ask_credentials_checked()
 
-    mstsc_page.set_always_ask_credentials(initial)
     mstsc_page.click_always_ask_credentials()
     assert mstsc_page.is_always_ask_credentials_checked() != initial, "First click must change state."
 
