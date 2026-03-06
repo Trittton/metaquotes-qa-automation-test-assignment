@@ -169,11 +169,24 @@ class RdpLogonSettingsPage:
             self._window.print_control_identifiers()
 
     def _get_computer_field(self):
-        # TODO: discover correct auto_id via print_control_identifiers
-        return self._window.child_window(auto_id="CenterEdit", control_type="Edit")
+        # Try expanded-state auto_id first, then collapsed, then positional fallback
+        for auto_id in ("13050", "5012"):
+            try:
+                field = self._window.child_window(auto_id=auto_id, control_type="Edit")
+                if field.exists(timeout=1):
+                    return field
+            except Exception:
+                pass
+        return self._window.child_window(control_type="Edit", found_index=0)
 
     def _get_username_field(self):
-        return self._window.child_window(auto_id="UserNameEdit", control_type="Edit")
+        try:
+            field = self._window.child_window(auto_id="13064", control_type="Edit")
+            if field.exists(timeout=1):
+                return field
+        except Exception:
+            pass
+        return self._window.child_window(control_type="Edit", found_index=1)
 
     def _get_always_ask_checkbox(self):
         return self._window.child_window(
