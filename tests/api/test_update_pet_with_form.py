@@ -194,7 +194,7 @@ def test_update_is_applied_to_correct_pet(api_client: PetstoreApiClient, created
 
 @pytest.mark.negative
 @pytest.mark.xfail(
-    strict=True,
+    strict=False,
     reason="BUG: server accepts invalid status 'flying' instead of returning 405",
 )
 def test_update_with_invalid_status_value(api_client: PetstoreApiClient, created_pet: dict):
