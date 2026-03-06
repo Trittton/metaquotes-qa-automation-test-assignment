@@ -98,3 +98,85 @@ class RdpLogonSettingsPage:
             ).exists(timeout=1)
         except Exception:
             return False
+
+    def set_computer(self, hostname: str) -> None:
+        self._get_computer_field().set_edit_text(hostname)
+        logger.info("Set Computer = %r", hostname)
+
+    def get_computer(self) -> str:
+        return self._get_computer_field().get_value()
+
+    def clear_computer(self) -> None:
+        self._get_computer_field().set_edit_text("")
+
+    def set_username(self, username: str) -> None:
+        self._get_username_field().set_edit_text(username)
+        logger.info("Set Username = %r", username)
+
+    def get_username(self) -> str:
+        return self._get_username_field().get_value()
+
+    def clear_username(self) -> None:
+        self._get_username_field().set_edit_text("")
+
+    def is_username_field_visible(self) -> bool:
+        try:
+            return self._get_username_field().is_visible()
+        except Exception:
+            return False
+
+    def is_username_field_enabled(self) -> bool:
+        try:
+            return self._get_username_field().is_enabled()
+        except Exception:
+            return False
+
+    def set_always_ask_credentials(self, checked: bool) -> None:
+        """Set checkbox to the desired state; only clicks if state differs."""
+        checkbox = self._get_always_ask_checkbox()
+        current = checkbox.get_toggle_state()  # 0 = unchecked, 1 = checked
+        if (checked and current == 0) or (not checked and current == 1):
+            checkbox.click_input()
+
+    def is_always_ask_credentials_checked(self) -> bool:
+        return self._get_always_ask_checkbox().get_toggle_state() == 1
+
+    def is_always_ask_credentials_enabled(self) -> bool:
+        try:
+            return self._get_always_ask_checkbox().is_enabled()
+        except Exception:
+            return False
+
+    def click_always_ask_credentials(self) -> None:
+        """Toggle the checkbox once regardless of current state."""
+        self._get_always_ask_checkbox().click_input()
+
+    def click_save_as(self) -> None:
+        self._window.child_window(title="Save As...", control_type="Button").click_input()
+
+    def click_open(self) -> None:
+        self._window.child_window(title="Open...", control_type="Button").click_input()
+
+    def is_computer_field_visible(self) -> bool:
+        try:
+            return self._get_computer_field().is_visible()
+        except Exception:
+            return False
+
+    def print_controls(self) -> None:
+        """Dump UIA control tree — useful for finding auto_id values on a new machine."""
+        if self._window:
+            self._window.print_control_identifiers()
+
+    def _get_computer_field(self):
+        # TODO: discover correct auto_id via print_control_identifiers
+        return self._window.child_window(auto_id="CenterEdit", control_type="Edit")
+
+    def _get_username_field(self):
+        return self._window.child_window(auto_id="UserNameEdit", control_type="Edit")
+
+    def _get_always_ask_checkbox(self):
+        return self._window.child_window(
+            title="Always ask for credentials",
+            control_type="CheckBox",
+        )
