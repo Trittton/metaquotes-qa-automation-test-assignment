@@ -19,7 +19,7 @@ jobs:
           cache: "pip"
 
       - name: Install dependencies
-        run: pip install -r requirements.txt
+        run: grep -v 'pywin32\|pywinauto' requirements.txt | pip install -r /dev/stdin
 
       - name: Run API tests
         env:
